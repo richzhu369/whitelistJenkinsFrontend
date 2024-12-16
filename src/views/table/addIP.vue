@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-form :model="listQuery" :rules="rules" ref="dataForm">
+      <el-form ref="dataForm" :model="listQuery" :rules="rules">
         <el-row>
           <el-col :span="24">
             <el-form-item label="商户号" prop="merchantName">
@@ -49,7 +49,7 @@
 </style>
 <script>
 import waves from '@/directive/waves'
-import { fetchAddIP,fetchDeleteIP } from '@/api/whiteList'
+import { fetchAddIP, fetchDeleteIP } from '@/api/whiteList'
 
 export default {
   name: 'ComplexTable',
@@ -60,22 +60,33 @@ export default {
         return callback(new Error('IP地址不能为空'))
       }
       const ips = value.split(',')
+      const ipv4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+      const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)|(([0-9a-fA-F]{1,4}:){1,6}|:):(([0-9a-fA-F]{1,4}:){1,5}|:):(([0-9a-fA-F]{1,4}:){1,4}|:):(([0-9a-fA-F]{1,4}:){1,3}|:):(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,5}(([0-9a-fA-F]{1,4}:){1,4}|:):(([0-9a-fA-F]{1,4}:){1,3}|:):(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,4}(([0-9a-fA-F]{1,4}:){1,3}|:):(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,3}(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,2}(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,1}(([0-9a-fA-F]{1,4})|:)|::)$/
+
       for (let i = 0; i < ips.length; i++) {
-        const segments = ips[i].trim().split('.')
-        if (segments.length !== 4) {
-          return callback(new Error('IP地址格式不正确'))
+        const ip = ips[i].trim()
+        if (!ipv4Pattern.test(ip) && !ipv6Pattern.test(ip)) {
+          return callback(new Error('Invalid IP address format'))
         }
-        for (let j = 0; j < segments.length; j++) {
-          const segment = parseInt(segments[j], 10)
-          if (isNaN(segment) || segment < 0 || segment > 255) {
-            return callback(new Error('IP地址格式不正确'))
-          }
+      }
+      callback()
+    }
+    const validateMerchantName = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error('Merchant name cannot be empty'))
+      }
+      const merchants = value.split(',')
+      const merchantPattern = /^[a-zA-Z0-9]{3}$/
+      for (let i = 0; i < merchants.length; i++) {
+        const merchant = merchants[i].trim()
+        if (!merchantPattern.test(merchant)) {
+          return callback(new Error('Invalid merchant name format'))
         }
       }
       callback()
     }
     return {
-      listLoading: true,
+      listLoading: false,
       listQuery: {
         merchantName: undefined,
         IP: undefined,
@@ -83,7 +94,7 @@ export default {
         country: this.$route.path.substring(1)
       },
       rules: {
-        merchantName: [{ required: true, message: '商户号不能为空', trigger: 'blur' }],
+        merchantName: [{ required: true, validator: validateMerchantName, trigger: 'blur' }],
         IP: [{ required: true, validator: validateIP, trigger: 'blur' }]
       },
       downloadLoading: false
