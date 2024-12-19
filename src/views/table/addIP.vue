@@ -5,7 +5,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="商户号" prop="merchantName">
-              <el-input v-model="listQuery.merchantName" placeholder="商户号" style="width: 300px;" class="filter-item" />
+              <el-input v-model="listQuery.merchantName" placeholder="多个商户号,使用英文逗号分割" style="width: 300px;" class="filter-item" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -66,21 +66,21 @@ export default {
       for (let i = 0; i < ips.length; i++) {
         const ip = ips[i].trim()
         if (!ipv4Pattern.test(ip) && !ipv6Pattern.test(ip)) {
-          return callback(new Error('Invalid IP address format'))
+          return callback(new Error('IP地址格式错误'))
         }
       }
       callback()
     }
     const validateMerchantName = (rule, value, callback) => {
       if (!value) {
-        return callback(new Error('Merchant name cannot be empty'))
+        return callback(new Error('商户不能为空'))
       }
       const merchants = value.split(',')
       const merchantPattern = /^[a-zA-Z0-9]{3}$/
       for (let i = 0; i < merchants.length; i++) {
         const merchant = merchants[i].trim()
         if (!merchantPattern.test(merchant)) {
-          return callback(new Error('Invalid merchant name format'))
+          return callback(new Error('商户格式错误'))
         }
       }
       callback()
