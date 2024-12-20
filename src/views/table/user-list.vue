@@ -38,7 +38,7 @@
         </template>
       </el-table-column>
       <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="{row,$index}">
+        <template slot-scope="{row}">
           <el-button size="mini" type="info" @click="handleReset(row.username)">
             修改密码
           </el-button>
@@ -52,7 +52,7 @@
     <el-dialog title="新建用户" :visible.sync="dialogFormVisible">
       <el-form ref="createUserRef" :model="temp" :rules="loginRules">
         <el-form-item label="用户名" label-width="120px" prop="username">
-          <el-input v-model="temp.username" autocomplete="off"/>
+          <el-input v-model="temp.username" autocomplete="off" />
         </el-form-item>
         <el-form-item label="密码" label-width="120px" prop="password">
           <el-input v-model="temp.password" placeholder="请输入密码" show-password />
@@ -211,6 +211,10 @@ export default {
           createUser(formData).then(() => {
             // 当 Promise 解决时，调用 getList
             this.getList()
+            this.$message({
+              message: '添加用户成功',
+              type: 'success'
+            })
             // 并设置 listLoading 为 false
             this.listLoading = false
             this.dialogFormVisible = false
@@ -235,11 +239,19 @@ export default {
       deleteUser(formData).then(() => {
         // 当 Promise 解决时，调用 getList
         this.getList()
+        this.$message({
+          message: '删除用户成功',
+          type: 'success'
+        })
         // 并设置 listLoading 为 false
         this.dialogDeleteVisible = false
       }).catch((error) => {
         // 如果有错误，同样需要设置 listLoading 为 false
         this.dialogDeleteVisible = true
+        this.$message({
+          message: '删除用户失败',
+          type: 'error'
+        })
         console.error('删除用户发生错误:', error)
       })
     },
@@ -254,11 +266,20 @@ export default {
           resetUser(formData).then(() => {
             // 当 Promise 解决时，调用 getList
             this.getList()
+            this.dialogResetVisible = false
+            this.$message({
+              message: '修改密码成功',
+              type: 'success'
+            })
             // 并设置 listLoading 为 false
             this.listLoading = false
           }).catch((error) => {
             // 如果有错误，同样需要设置 listLoading 为 false
             this.listLoading = false
+            this.$message({
+              message: '修改密码失败',
+              type: 'error'
+            })
             console.error('修改密码失败:', error)
           })
         } else {
