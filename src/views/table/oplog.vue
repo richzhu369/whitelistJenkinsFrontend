@@ -34,14 +34,17 @@
         </template>
       </el-table-column>
     </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
   </div>
 </template>
 
 <script>
 import { fetchLogList } from '@/api/whiteListLog'
+import Pagination from '@/components/Pagination'
 
 export default {
   name: 'ComplexTable',
+  components: { Pagination },
   data() {
     return {
       visible: false,
@@ -50,6 +53,8 @@ export default {
       total: 0,
       listLoading: true,
       listQuery: {
+        page: 1,
+        limit: 20,
         Ip: '',
         OpTime: '',
         SiteName: '',
@@ -64,8 +69,9 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      fetchLogList().then(response => {
+      fetchLogList(this.listQuery).then(response => {
         this.list = response.data
+        this.total = response.total
         this.listLoading = false
       }).catch(() => {
         this.listLoading = false
