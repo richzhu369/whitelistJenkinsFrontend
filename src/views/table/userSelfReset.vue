@@ -1,303 +1,84 @@
 <template>
-  <div class="app-container">
-    <div class="filter-container">
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-edit"
-        @click="handleCreate"
-      >
-        创建用户
-      </el-button>
-    </div>
-
-    <el-table
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      border
-      fit
-      highlight-current-row
-      style="width: 100%;"
-      @sort-change="sortChange"
-    >
-      <el-table-column label="用户名" min-width="150px">
-        <template slot-scope="{row}">
-          <span>{{ row.username }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" min-width="150px">
-        <template slot-scope="{row}">
-          <span>{{ formatDate(row.CreatedAt) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="最后登陆时间" min-width="150px">
-        <template slot-scope="{row}">
-          <span>{{ formatDate(row.LastLoginTime) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button size="mini" type="info" @click="handleReset(row.username)">
-            修改密码
-          </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row.username)">
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <el-dialog title="新建用户" :visible.sync="dialogFormVisible">
-      <el-form ref="createUserRef" :model="temp" :rules="loginRules">
-        <el-form-item label="用户名" label-width="120px" prop="username">
-          <el-input v-model="temp.username" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="密码" label-width="120px" prop="password">
-          <el-input v-model="temp.password" placeholder="请输入密码" show-password />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="userCreate">确 定</el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog title="修改密码" :visible.sync="dialogResetVisible">
-      <el-form ref="resetUserPass" :model="temp" :rules="loginRules">
-        <el-form-item label="用户名" label-width="120px">
-          <el-input v-model="temp.username" autocomplete="off" :disabled="true" />
-        </el-form-item>
-        <el-form-item label="密码" label-width="120px" prop="password">
-          <el-input v-model="temp.password" placeholder="请输入密码" show-password />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogResetVisible = false">取 消</el-button>
-        <el-button type="primary" @click="userReset">确 定</el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog title="确定要删除用户" :visible.sync="dialogDeleteVisible">
-      <el-form :model="temp">
-        <el-form-item label="用户名" label-width="120px">
-          <el-input v-model="temp.username" autocomplete="off" :disabled="true" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogDeleteVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleUserDelete">确 定</el-button>
-      </div>
-    </el-dialog>
+  <div class="user-self-reset">
+    <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form-item label="当前用户" prop="username">
+        <el-input v-model="form.username" disabled />
+      </el-form-item>
+      <el-form-item label="新密码" prop="password">
+        <el-input v-model="form.password" type="password" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="再次输入新密码" prop="confirmPassword">
+        <el-input v-model="form.confirmPassword" type="password" autocomplete="off" />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm">Submit</el-button>
+      </el-form-item>
+    </el-form>
   </div>
 </template>
 
 <script>
-import { createUser, deleteUser, fetchUserList, resetUser } from '@/api/user'
-import waves from '@/directive/waves' // waves directive
-import { validUsername } from '@/utils/validate'
+import { resetUser } from '@/api/user'
 
 export default {
-  name: 'ComplexTable',
-  directives: { waves },
+  name: 'UserSelfReset',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('账户名只允许小写字母+数字'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('密码要求6位以上'))
-      } else {
-        callback()
-      }
-    }
     return {
-      visible: false,
-      tableKey: 0,
-      list: null,
-      total: 0,
-      listLoading: true,
-      listQuery: {
-        username: '',
+      form: {
+        username: this.$store.getters.name, // Assuming username is stored in Vuex
         password: '',
-        CreatedAt: '',
-        LastLoginTime: ''
+        confirmPassword: ''
       },
-      dialogFormVisible: false,
-      dialogResetVisible: false,
-      dialogDeleteVisible: false,
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
-      temp: {
-        username: '',
-        password: ''
-      },
-      loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, message: 'Please input the new password', trigger: 'blur' }],
+        confirmPassword: [
+          { required: true, message: 'Please confirm the new password', trigger: 'blur' },
+          { validator: this.validatePassword, trigger: 'blur' }
+        ]
       }
     }
-  },
-  created() {
-    this.getList()
   },
   methods: {
-    getList() {
-      this.listLoading = true
-      fetchUserList(this.listQuery).then(response => {
-        this.list = response.data.items
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
-      })
-      this.listLoading = false
-    },
-    handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
-    },
-    sortChange(data) {
-      const { prop, order } = data
-      if (prop === 'id') {
-        this.sortByID(order)
-      }
-    },
-    sortByID(order) {
-      if (order === 'ascending') {
-        this.listQuery.sort = '+id'
+    validatePassword(rule, value, callback) {
+      if (value !== this.form.password) {
+        callback(new Error('2次密码不匹配'))
       } else {
-        this.listQuery.sort = '-id'
-      }
-      this.handleFilter()
-    },
-    resetTemp() {
-      this.temp = {
-        username: '',
-        password: ''
+        callback()
       }
     },
-    handleCreate() {
-      this.resetTemp()
-      this.dialogFormVisible = true
-    },
-    handleReset(data) {
-      this.resetTemp()
-      this.dialogResetVisible = true
-      this.temp.username = data
-    },
-    handleDelete(data) {
-      this.resetTemp()
-      this.dialogDeleteVisible = true
-      this.temp.username = data
-    },
-    userCreate() {
-      this.dialogFormVisible = true
-      this.$refs.createUserRef.validate(valid => {
+    submitForm() {
+      this.$refs.form.validate(valid => {
         if (valid) {
-          const formData = new FormData()
-          formData.append('username', this.temp.username)
-          formData.append('password', this.temp.password)
+          const formData = new URLSearchParams()
+          formData.append('username', this.form.username)
+          formData.append('password', this.form.password)
 
-          createUser(formData).then(() => {
-            // 当 Promise 解决时，调用 getList
-            this.getList()
-            this.$message({
-              message: '添加用户成功',
-              type: 'success'
-            })
-            // 并设置 listLoading 为 false
-            this.listLoading = false
-            this.dialogFormVisible = false
-
-            this.resetTemp()
-          }).catch((error) => {
-            // 如果有错误，同样需要设置 listLoading 为 false
-            this.listLoading = false
-            console.error('添加用户发生错误:', error)
+          resetUser(formData).then(response => {
+            console.log(response.message)
+            this.$message.success('密码修改成功')
+            this.form.password = ''
+            this.form.confirmPassword = ''
+          }).catch(error => {
+            console.error('密码修改失败:', error)
+            this.$message.error('密码修改失败')
           })
         } else {
-          console.log('添加用户发生错误!!')
+          console.log('Error submitting form!')
           return false
         }
       })
-    },
-    handleUserDelete() {
-      this.listLoading = true
-      const formData = new FormData()
-      formData.append('username', this.temp.username)
-
-      deleteUser(formData).then(() => {
-        // 当 Promise 解决时，调用 getList
-        this.getList()
-        this.$message({
-          message: '删除用户成功',
-          type: 'success'
-        })
-        // 并设置 listLoading 为 false
-        this.dialogDeleteVisible = false
-      }).catch((error) => {
-        // 如果有错误，同样需要设置 listLoading 为 false
-        this.dialogDeleteVisible = true
-        this.$message({
-          message: '删除用户失败',
-          type: 'error'
-        })
-        console.error('删除用户发生错误:', error)
-      })
-    },
-    userReset() {
-      this.$refs.resetUserPass.validate(valid => {
-        if (valid) {
-          this.dialogResetVisible = true // Move this line out of the Promise
-          const formData = new FormData()
-          formData.append('username', this.temp.username)
-          formData.append('password', this.temp.password)
-
-          resetUser(formData).then(() => {
-            // 当 Promise 解决时，调用 getList
-            this.getList()
-            this.dialogResetVisible = false
-            this.$message({
-              message: '修改密码成功',
-              type: 'success'
-            })
-            // 并设置 listLoading 为 false
-            this.listLoading = false
-          }).catch((error) => {
-            // 如果有错误，同样需要设置 listLoading 为 false
-            this.listLoading = false
-            this.$message({
-              message: '修改密码失败',
-              type: 'error'
-            })
-            console.error('修改密码失败:', error)
-          })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
-    formatDate(dateString) {
-      const date = new Date(dateString)
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      const hours = String(date.getHours()).padStart(2, '0')
-      const minutes = String(date.getMinutes()).padStart(2, '0')
-      const seconds = String(date.getSeconds()).padStart(2, '0')
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     }
   }
 }
 </script>
+
+<style scoped>
+.user-self-reset {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+</style>

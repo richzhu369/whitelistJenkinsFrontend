@@ -9,6 +9,7 @@ import Layout from '@/layout'
 
 /* Router Modules */
 import userList from '@/router/modules/userList'
+import userSelfReset from '@/router/modules/userSelfReset'
 import whiteList from '@/router/modules/whiteList'
 import opLog from '@/router/modules/oplog'
 
@@ -109,6 +110,7 @@ export const asyncRoutes = [
   whiteList,
   opLog,
   userList,
+  userSelfReset,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

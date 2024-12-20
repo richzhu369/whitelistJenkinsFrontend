@@ -2,23 +2,22 @@
 
 import Layout from '@/layout'
 
-const userList = {
-  path: '/userList',
+const userSelfReset = {
+  path: '/userSelfReset',
   component: Layout,
   redirect: '/table/complex-table',
-  name: '用户管理',
+  name: '密码修改',
   meta: {
-    title: '用户管理',
-    icon: 'user',
-    roles: ['admin']
+    title: '密码修改',
+    icon: 'user'
   },
   children: [
     {
-      path: 'usermanagement',
-      component: () => import('@/views/table/user-list.vue'),
-      name: '用户管理',
-      meta: { title: '用户管理', roles: ['admin'] }
+      path: 'userSelfReset',
+      component: () => import('@/views/table/userSelfReset.vue'),
+      name: '密码修改',
+      meta: { title: '密码修改' }
     }
   ]
 }
-export default userList
+export default userSelfReset

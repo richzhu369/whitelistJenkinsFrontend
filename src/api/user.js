@@ -54,3 +54,4 @@ export function fetchUserList(token) {
     params: { token }
   })
 }
+
