@@ -1,5 +1,14 @@
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <el-input v-model="listQuery.Ip" placeholder="IP地址" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.MerchantNumber" placeholder="商户名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.OpUser" placeholder="操作人员" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        Search
+      </el-button>
+    </div>
+
     <el-table
       v-loading="listLoading"
       :data="list"
@@ -90,6 +99,15 @@ export default {
       const minutes = String(date.getMinutes()).padStart(2, '0')
       const seconds = String(date.getSeconds()).padStart(2, '0')
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    },
+    handleFilter() {
+      fetchLogList(this.listQuery).then(response => {
+        this.list = response.data
+        this.total = response.total
+        this.listLoading = false
+      }).catch(() => {
+        this.listLoading = false
+      })
     }
   }
 }

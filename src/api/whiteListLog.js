@@ -7,3 +7,11 @@ export function fetchLogList(query) {
     params: query
   })
 }
+
+export function fetchFilter(query) {
+  return request({
+    url: '/api/whitelistlog/filter',
+    method: 'get',
+    params: query
+  })
+}
