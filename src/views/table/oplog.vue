@@ -50,9 +50,11 @@
 <script>
 import { fetchLogList } from '@/api/whiteListLog'
 import Pagination from '@/components/Pagination'
+import waves from '@/directive/waves'
 
 export default {
   name: 'ComplexTable',
+  directives: { waves },
   components: { Pagination },
   data() {
     return {
