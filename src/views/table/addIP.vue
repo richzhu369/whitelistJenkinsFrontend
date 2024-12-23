@@ -117,10 +117,10 @@ export default {
             OpUser: this.listQuery.OpUser,
             country: this.listQuery.country
           }
-          fetchAddIP(data).then(() => {
+          fetchAddIP(data).then((response) => {
             this.$notify({
               title: 'Success',
-              message: 'IP地址添加成功',
+              message: response.message,
               type: 'success',
               duration: 2000
             })
@@ -140,10 +140,10 @@ export default {
             OpUser: this.listQuery.OpUser,
             country: this.listQuery.country
           }
-          fetchDeleteIP(data).then(() => {
+          fetchDeleteIP(data).then((response) => {
             this.$notify({
               title: 'Success',
-              message: 'IP地址删除成功',
+              message: response.message,
               type: 'success',
               duration: 2000
             })
