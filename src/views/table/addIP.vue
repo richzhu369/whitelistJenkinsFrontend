@@ -1,24 +1,24 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <div class="card">
       <el-form ref="dataForm" :model="listQuery" :rules="rules">
         <el-row>
           <el-col :span="24">
             <el-form-item label="商户号" prop="merchantName">
-              <el-input v-model="listQuery.merchantName" placeholder="多个商户号,使用英文逗号分割" style="width: 300px;" class="filter-item" />
+              <el-input v-model="listQuery.merchantName" placeholder="多个商户号,使用英文逗号分割" class="filter-item" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
             <el-form-item label="IP地址" prop="IP">
-              <el-input v-model="listQuery.IP" placeholder="多个IP地址,使用英文逗号分割" style="width: 300px;" class="filter-item" />
+              <el-input v-model="listQuery.IP" type="textarea" placeholder="多个IP地址,使用换行分割" rows="6" class="filter-item" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="48">
-            <el-button v-waves :loading="listLoading" class="filter-item" style="margin-left: 100px;" type="primary" icon="el-icon-plus" @click="addIP">
+            <el-button v-waves :loading="listLoading" class="filter-item" type="primary" icon="el-icon-plus" @click="addIP">
               添加
             </el-button>
             <el-button v-waves :loading="listLoading" class="filter-item" type="danger" icon="el-icon-close" @click="deleteIP">
@@ -31,22 +31,6 @@
   </div>
 </template>
 
-<style scoped>
-.app-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 60vh; /* Full viewport height */
-}
-
-.filter-container {
-  width: 100%;
-  max-width: 600px; /* Adjust as needed */
-  padding: 20px;
-  background-color: #fff; /* Optional: for better visibility */
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1); /* Optional: for better visibility */
-}
-</style>
 <script>
 import waves from '@/directive/waves'
 import { fetchAddIP, fetchDeleteIP } from '@/api/whiteList'
@@ -59,7 +43,7 @@ export default {
       if (!value) {
         return callback(new Error('IP地址不能为空'))
       }
-      const ips = value.split(',')
+      const ips = value.split('\n')
       const ipv4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
       const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)|(([0-9a-fA-F]{1,4}:){1,6}|:):(([0-9a-fA-F]{1,4}:){1,5}|:):(([0-9a-fA-F]{1,4}:){1,4}|:):(([0-9a-fA-F]{1,4}:){1,3}|:):(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,5}(([0-9a-fA-F]{1,4}:){1,4}|:):(([0-9a-fA-F]{1,4}:){1,3}|:):(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,4}(([0-9a-fA-F]{1,4}:){1,3}|:):(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,3}(([0-9a-fA-F]{1,4}:){1,2}|:):(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,2}(([0-9a-fA-F]{1,4}:){1}|:):(([0-9a-fA-F]{1,4})|:)|::([0-9a-fA-F]{1,4}:){0,1}(([0-9a-fA-F]{1,4})|:)|::)$/
 
@@ -156,3 +140,20 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  width: 400px;
+}
+</style>
